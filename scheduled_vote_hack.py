@@ -1,15 +1,15 @@
 import requests
 import asyncio
 
-url = 'https://votes.igihe.com/rra/rra_votes.php'
-myobj = {
-    "poll_id": "1",
-    "question_id": "10"
+url = ''
+req = {
+    "poll_id": "",
+    "question_id": ""
 }
 
 def hackVote():
     try:
-        x = requests.post(url, data = myobj) 
+        x = requests.post(url, data = req) 
         # print(num)
         print(x.text)
     except:
