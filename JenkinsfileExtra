@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    environment {
+        // node
+        NVM_DIR = "${env.HOME}/.nvm"
+        NODE_VERSION = '20.15.1'
+        PATH = "${env.PATH}:${env.NVM_DIR}/versions/node/v${NODE_VERSION}/bin"
+
+        SSH_KEY = credentials('') // Use credential ID instead of full key
+        DATABASE_URL = ''
+    }
+
+    stages {
+        
+        stage('Clone Repository') {
+            steps {
+                script {
+                    git branch: '', credentialsId: '', url: 'git@github.com:username/repo.git'
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    sh 'npm install -g pnpm && pnpm install --no-frozen-lockfile'
+                }
+            }
+        }
+
+        stage('Generate Prisma Client') {
+            steps {
+                script {
+                    sh 'npx prisma generate'
+                }
+            }
+        }
+
+        stage('Run Migrations') {
+            steps {
+                script {
+                    sh 'npx prisma migrate dev'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    sh 'pnpm run build'
+                }
+            }
+        }
+
+        stage('Print Env Vars') {
+            steps {
+                script {
+                    sh 'printenv | grep DATABASE_URL'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'build/**', allowEmptyArchive: true
+        }
+    }
+}
